@@ -30,12 +30,11 @@
 				overflow: hidden ;
 			}
 			#Spielfeld > canvas {
-				width: 100% ;
-				height: 100% ;
-				object-fit: contain ;
+				width: 100vw ;
+				height: 100vh ;
 			}
 			#hud {
-				position: absolute;
+				position: fixed;
 				top: 10px;
 				left: 10px;
 				background-color: rgba(255, 255, 255, 0.5);
@@ -51,15 +50,13 @@
 				display: none;
 				width: 100vw ;
 				height: 100vh ;
-				left: 10px;
+				left: 0.521vw ;
 			}
 			#pause-screen {
                 display: none;
-                position: absolute;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
+                position: fixed;
+                width: 100vw;
+                height: 100vh;
                 z-index: 9999;
             }
 
@@ -83,7 +80,7 @@
 				text-align: center;
 				font-family: Agrandir;
 				top: 10px;
-				left: 1430px;
+				left: 95vw;
 				background-color: rgba(255, 255, 255, 0.5);
 				padding: 6px;
 				border-radius: 5px;
@@ -91,6 +88,11 @@
 			#controls > h1 {
 				font-size: medium;
 			}
+			#hud, #controls {
+				transition: opacity 0.5s ease;
+				opacity: 1;
+			}
+
 			
 		</style>
 		<script src="../src/js/spieler.js"></script>
@@ -98,9 +100,10 @@
 		<script src="../src/js/musik.js"></script>
 		<!-- <script src="../src/js/gegner.js"></script> -->
 		<script>
+
 			"use strict" ;
 			// Die Map als Array aus Strings, deren einzelne Zeichen die Tiles repräsentieren
-
+		
 		///////////////////////////////////////////////////////////////////////////////////////////////////
 			var map = [] ;
 		///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -132,13 +135,19 @@
 		function init( ereignis ) {
 			starteLevel( levelNr++ ) ;
 			const PAUSE = document.getElementById("pause-screen");
+			const HUD = document.getElementById("hud");
+			const CONTROLS = document.getElementById("controls");
 
             document.addEventListener("keydown", (notouch) => {
             if (notouch.key === "Escape") {
                 if (PAUSE.style.display === "none") {
                 PAUSE.style.display = "block";
+				HUD.style.display = "none";
+				CONTROLS.style.display = "none";
                 } else {
                 PAUSE.style.display = "none";
+				HUD.style.display = "block";
+				CONTROLS.style.display = "block";
                 }
             } else {
                 notouch.preventDefault();
