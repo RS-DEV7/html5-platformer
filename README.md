@@ -8,7 +8,7 @@ A simple 2D platformer game developed using HTML, CSS, and JavaScript. The playe
 
 📌 Features
 
-✅ Keyboard controls (A|D = Movement Keys) (K = Jump) (R = Restart Game) (ESC = Pause)
+✅ Keyboard controls (A | D = Movement Keys) (K = Jump) (R = Restart Game) (ESC = Pause)
 ✅ Collision detection and platform mechanics
 ✅ Animations using CSS & Animate
 ✅ Sound effects
