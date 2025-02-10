@@ -42,3 +42,5 @@ This project is released under the MIT License – feel free to use and modify i
 
 Enjoy playing Arin: Descent Into Darkness! 🚀
 
+![image](https://github.com/user-attachments/assets/4dec4d0f-8488-4c80-bcf1-5298d1f6ec4a)
+
