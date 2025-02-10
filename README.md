@@ -28,14 +28,6 @@ Open the browser and go to:
 
 http://localhost/webspace/Arin_Decent_Into_Darkness/
 
-📂 Project Structure
-
-/Arin_Decent_Into_Darkness_full
-│── index.html       # Start Page
-├── /media           # Sprites, Sounds
-├── /src             # Game Logic and Scripts, Fonts
-└── /webpages        # Main files
-
 📜 License
 
 This project is released under the MIT License – feel free to use and modify it for personal or educational purposes. Commercial use and resale are not permitted.
