@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta name="viewport" content="width=device-width"/>
+		<meta charset="utf-8"/>
+		<title>Arin: Descent Into Darkness</title>
+		<link rel="icon" href="../media/img/icon.png">
+		<style>
+			@charset "utf-8";
+
+			@font-face {
+				font-family: 'Agrandir' ;
+				src: url('../src/fonts/Agrandir.otf');
+			}
+
+			body{ 
+				margin: 0 ;
+				background-color: black;
+			}
+			#Bildquellen {
+				display: none ;
+			} 
+			#Spielfeld {
+				position: fixed ;
+				top: 0 ;
+				left: 0 ;
+				width: 100vw ;
+				height: 100vh ;
+				box-sizing: border-box ;
+				overflow: hidden ;
+			}
+			#Spielfeld > canvas {
+				width: 100% ;
+				height: 100% ;
+				object-fit: contain ;
+			}
+			#hud {
+				position: absolute;
+				top: 10px;
+				left: 10px;
+				background-color: rgba(255, 255, 255, 0.5);
+				padding: 10px;
+				border-radius: 5px;
+			}
+			#score, #leben, #fps {
+				font-size: 16px;
+				font-family: Agrandir ;
+				margin: 5px;
+			}
+			#level4Video {
+				display: none;
+				width: 100vw ;
+				height: 100vh ;
+				left: 10px;
+			}
+			#pause-screen {
+                display: none;
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                z-index: 9999;
+            }
+
+            #pause-screen h1 {
+                font-size: 48px;
+                color: white;
+				font-family: Agrandir ;
+                text-align: center;
+                margin-top: 200px;
+            }
+            #pause-screen p {
+                font-size: 24px;
+                color: white;
+				font-family: Agrandir ;
+                text-align: center;
+                margin-top: 50px;
+            }
+			#controls {
+				display: block;
+				position: fixed;
+				text-align: center;
+				font-family: Agrandir;
+				top: 10px;
+				left: 1430px;
+				background-color: rgba(255, 255, 255, 0.5);
+				padding: 6px;
+				border-radius: 5px;
+			}
+			#controls > h1 {
+				font-size: medium;
+			}
+			
+		</style>
+		<script src="../src/js/spieler.js"></script>
+		<script src="../src/js/level.js"></script>
+		<script src="../src/js/musik.js"></script>
+		<!-- <script src="../src/js/gegner.js"></script> -->
+		<script>
+			"use strict" ;
+			// Die Map als Array aus Strings, deren einzelne Zeichen die Tiles repräsentieren
+
+		///////////////////////////////////////////////////////////////////////////////////////////////////
+			var map = [] ;
+		///////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+		// Konstanten für die verwendeten Tiles
+		const FELD = 40 ; // Tile-Breite und -Höhe
+		const TILES = ['A','B','C','D','S','E','F','G','H','Z', 'I', 'J', 'K', 'L','X','M','Y','V','1','2','3','4','5','6','7'] ; // Repräsentierende Buchstaben
+		const BLOCKER = 'BCDEPAFGHJKLM7' ; // Den Spieler blockierende Tiles für Kollisionskontrolle
+		const DEATH = 'I' ;
+
+		// Globale Variablen zur allgemeinen Verwendung:
+		var hintergrund, tileset, spritesheet ; // Bilddaten aus <img>
+		var spielfeld, anzeige ; // Elemente zur Darstellung im Dokument
+		var level, ausschnitt ; // Generierte Level-Grafik in Canvas
+		var spieler, steuerung, levelPosX, zuletzt, restart // Beschreibung der Spielsituation
+		var levelNr = 0 ;    
+		var schluessel ;
+		var framezaehler = 0 ;	
+		var musik1, musik2 ;		
+
+		var level4VideoElement;
+		var showLevel = false;
+
+		window.addEventListener('load', init ) ;
+		
+		
+
+		function init( ereignis ) {
+			starteLevel( levelNr++ ) ;
+			const PAUSE = document.getElementById("pause-screen");
+
+            document.addEventListener("keydown", (notouch) => {
+            if (notouch.key === "Escape") {
+                if (PAUSE.style.display === "none") {
+                PAUSE.style.display = "block";
+                } else {
+                PAUSE.style.display = "none";
+                }
+            } else {
+                notouch.preventDefault();
+            }
+			})
+			setInterval(framerate, 1000 ) ;
+		}
+
+		function framerate(){
+			console.log( 'framerate:' + framezaehler ) ;
+			framezaehler = 0 ;
+		}
+
+
+		
+		function starteLevel( nr ) {
+			console.log ('startLevelNr: '+nr);
+			console.log (LEVELLISTE[nr]);
+			// Initialisierung globaler Variablen mit HTML-Elementen
+			map = LEVELLISTE[nr].map ;
+			hintergrund = document.getElementById( LEVELLISTE[nr].hintergrund ) ;
+			tileset = document.getElementById( LEVELLISTE[nr].tileset ) ;
+			spritesheet = document.getElementById(LEVELLISTE[nr].spritesheet) ;
+			framezaehler = document.getElementById('frames') ;
+			spielfeld = document.getElementById('Spielfeld') ;
+			anzeige = document.getElementById('Anzeige') ;
+			schluessel = document.getElementById("score");
+			// Erzeuge Canvas mit der Level-Grafik aus der Map
+			level = zeichneLevel( map ) ;
+			// Erzeuge ein Canvas, in dem der auf dem Spielfeld angezeigte Ausschnitt liegt
+			if (ausschnitt) {
+                spielfeld.removeChild( ausschnitt ) ;
+            }
+			ausschnitt = document.createElement('canvas') ;
+			ausschnitt.width = spielfeld.clientWidth ;
+			ausschnitt.height = spielfeld.clientHeight ;
+			spielfeld.appendChild( ausschnitt ) ;
+			// Passenden Bereich aus dem Gesamtlevel kopieren
+			let stift = level.getContext('2d') ;
+			let bereich = stift.getImageData( 0,0, ausschnitt.width,ausschnitt.height ) ;
+			// Bereich in den Ausschnitt auf dem Spielfeld einsetzen
+			stift = ausschnitt.getContext('2d') ;
+			stift.putImageData( bereich, 0,0 ) ;
+			// Steuerungs-Objekt bereitstellen
+			steuerung = {
+				"links": false ,
+				"rechts": false ,
+				"sprung": false 
+			}
+			// Steuerung an Tastaturereignisse knüpfen
+			window.addEventListener('keydown', steuern ) ;
+			window.addEventListener('keyup', steuern ) ;
+
+			showLevel = false;
+
+			level4VideoElement = null;
+			if (nr == 3) {
+				level4VideoElement = document.getElementById('level4Video');
+				level4VideoElement.style.display = 'block';
+				ausschnitt.style.display = 'none';
+
+				spieleMusikVideo();
+
+				level4VideoElement.play();
+			}
+
+			// Aktualisierung mit Framerate starten
+			window.requestAnimationFrame( aktualisieren ) ;
+			zuletzt = new Date() ; // Start der Framezeitmessung
+			// Dummy-Wert für Bewegungstest festsetzen
+			levelPosX = 0 ;
+			spieler = new Spieler( LEVELLISTE[nr]['startX'], LEVELLISTE[nr]['startY'] ) ;
+			// gegner = new Gegner ( LEVELLISTE[nr]['startX1'], LEVELLISTE[nr]['startY1'] ) ;
+			
+		}
+
+		
+		function steuern( ereignis ) {
+			switch( ereignis.keyCode ) {
+				case 65: steuerung.links = ( ereignis.type == 'keydown' ) ; break ; // A, Links bewegung
+				case 68: steuerung.rechts = ( ereignis.type == 'keydown' ) ; break ; // D, Rechts bewegung
+				case 75: steuerung.sprung = ( ereignis.type == 'keydown' ) ; break ; // K, Sprung bewegung
+				// default: console.log('Nicht zugewiesen') ;
+			}
+		}
+
+		// Level neustart mit Taste R
+			document.addEventListener('keyup', function(e){
+			if(e.keyCode == 82)
+			window.location.reload();
+		})
+		
+		function aktualisieren() { 
+
+			framezaehler++
+
+			// Zeitmessung seit letzter Aktualisierung
+			let jetzt = new Date() ; // Zeit dieses Frames
+			let dauer = ( jetzt.getTime() - zuletzt.getTime() ) /1000 ; // Dauer in Sekunden
+			zuletzt = jetzt ; // Aktuellen Zeitpunkt für nächsten Frame festhalten
+			
+			if (level4VideoElement != null && level4VideoElement.ended && !showLevel) {
+				ausschnitt.style.display = 'block';
+				spieleMusik(levelNr);
+				showLevel = true;
+			}
+			if (level4VideoElement == null && !showLevel) {
+				spieleMusik(levelNr);
+				showLevel = true;
+			}
+
+			if (level4VideoElement == null || level4VideoElement.ended) {
+				if (level4VideoElement != null) {
+					level4VideoElement.style.display = 'none';
+				}
+			// gegner.aktualisieren( dauer ) ;
+			spieler.aktualisieren( dauer ) ;
+			spieler.updateSound();
+			}
+			// Nächste Aktualisierung in Auftrag geben
+			window.requestAnimationFrame( aktualisieren ) ;
+		}
+		
+		function zeichneLevel( karte ) {
+			let darstellung = document.createElement('canvas') ;
+			let stift = darstellung.getContext('2d') ;
+			darstellung.width = FELD * karte[0].length ;
+			darstellung.height = FELD * karte.length ;
+			
+			stift.drawImage( hintergrund, 0,0, darstellung.width,darstellung.height, 
+							0,0, darstellung.width,darstellung.height ) ;
+			// Zeichnen der Tiles über den Hintergrund gemäß der Karten-Information
+			for( let zeile = 0 ; zeile < karte.length ; zeile++ ) { // Durchlaufe alle Zeilen ...
+				for( let spalte = 0 ; spalte < karte[0].length ; spalte++ ) { // ... durchlaufe darin alle Spalten
+					let pos = TILES.indexOf( karte[zeile].charAt(spalte) ) ;
+					if( pos >= 0 ) {
+						stift.drawImage( tileset, pos*FELD,0, 40,40, spalte*FELD,zeile*FELD, 40,40 ) ;
+					}
+				}
+			}
+			return darstellung ;
+		}
+		</script>
+	</head>
+	<body>
+		<div id="Bildquellen">
+			<!-- Alle Level nach Reihenfolge -->
+
+			<img src="../media/img/hintergrund0.png" id="lvl1.1" />
+			<img src="../media/img/hintergrund1.png" id="lvl1.2" />
+			<img src="../media/img/hintergrund2.png" id="lvl1.3" />
+			<img src="../media/img/hintergrund3.png" id="lvl2" />
+			<img src="../media/img/Labor.png" id="lvl3" />
+
+			<!-- Alle Assets -->
+
+			<img src="../media/img/tileset.png" id="Tileset" />
+			<img src="../media/img/arin.png" id="Spritesheet" />
+			<img src="../media/img/arin2.png" id="Spritesheet2" />
+		</div>
+
+		<video id="level4Video">
+			<source src="../media/av/cutscene.mp4" type="video/mp4">
+		</video>
+		
+		
+		<div id="Spielfeld">
+			<!-- Hier wird das entsprechende Canvas über JS eingefügt -->
+		</div>
+		
+		<div id="hud">
+			<p id="leben">Leben: &#10084;&#65039;</p>
+			<p id="score">Schlüssel: 0</p>
+			<p id="fps">FPS: 0</p>
+		</div>
+		<div id="pause-screen">
+            <h1>Pause</h1>
+            <p>Drücke ESC zum weiterspielen</p>
+ 		</div>
+		 <div id="controls">
+			<h1>&#10095; Steuerung</h1>
+			<p>A = Links</p>
+			<p>D = Rechts</p>
+			<p>K = Sprung</p>
+			<p>R = Restart</p>
+			<p>ESC = Pause</p>
+		</div>
+	</body>
+</html>

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta name="viewport" content="width=device-width"/>
+		<meta charset="utf-8"/>
+		<title>Hauptmenü</title>
+		<link rel="icon" href="../media/img/home.png">
+		<style>
+			#body{
+				margin: 0 ;
+			}
+			#Bildquellen {
+				position: fixed ;
+				top: 0 ;
+				left: 8em ;
+				width: 1920px ;
+				height: 1080px ;
+				box-sizing: border-box ;
+				overflow: hidden ;
+				zoom: 70%;
+			}
+			:not(:fullscreen){
+				background-color: #000000 ;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="Bildquellen">
+			<video id="autoplay" muted autoplay loop>
+				<source src="./media/av/menu.mp4" type="video/mp4">
+			</video>
+			<audio id="play" autoplay loop>
+				<source src="./media/av/mainmenu.mp3" type="audio/mpeg">
+			</audio>
+			<!-- Musik ist von hier https://www.youtube.com/watch?v=Wjt6yyNDWmc -->
+			<script>
+				document.getElementById('autoplay').play();
+				var vid = document.getElementById("play");
+				vid.volume = 0.3;
+				document.getElementById('play').play();
+			</script>
+			<script>
+				document.addEventListener('keyup', function(levelload) {
+					if ((event.keyCode >= 65 && event.keyCode <= 90) || event.keyCode === 32) {
+    				// Überprüfen, ob die gedrückte Taste nicht Teil des ausgeschlossenen Bereichs liegt
+					if (!(event.keyCode >= 112 && event.keyCode <= 123)) {
+					// Weiterleitung zur angegebenen URL
+					window.location.href = './webpages/game.html';
+					}
+					}
+				});
+			 </script>
+		</div>
+	</body>
+</html>
