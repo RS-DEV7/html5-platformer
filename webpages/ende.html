@@ -10,13 +10,11 @@
 			}
 			#Bildquellen {
 				position: fixed ;
-				top: 2.5em ;
-				left: 10em ;
+				top: 12vh;
+				left: 18vw;
 				width: 100vw ;
 				height: 100vh ;
-				box-sizing: border-box ;
 				overflow: hidden ;
-				/* zoom: 70%; */
 			}
 			:not(:fullscreen){
 				background-color: #000000 ;
@@ -28,16 +26,15 @@
 			<img src="../media/img/end.png" id="ende">
         </img>
 			<script>
-				// document.addEventListener('keyup', function(levelload) {
-				// 	if ((event.keyCode >= 65 && event.keyCode <= 90) || event.keyCode === 32) {
-    			// 	// Überprüfen, ob die gedrückte Taste nicht Teil des ausgeschlossenen Bereichs liegt
-				// 	if (!(event.keyCode >= 112 && event.keyCode <= 123)) {
-				// 	// Weiterleitung zur angegebenen URL
-				// 	window.location.href = '../index.html';
-				// 	}
-				// 	}
-				// });
-
+				document.addEventListener('keyup', function(levelload) {
+					if ((event.keyCode >= 65 && event.keyCode <= 90) || event.keyCode === 32) {
+    				// Überprüfen, ob die gedrückte Taste nicht Teil des ausgeschlossenen Bereichs liegt
+					if (!(event.keyCode >= 112 && event.keyCode <= 123)) {
+					// Weiterleitung zur angegebenen URL
+					window.location.href = '../index.html';
+					}
+					}
+				});
 			 </script>
 		</div>
 	</body>
