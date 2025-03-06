@@ -26,7 +26,7 @@ Start the Apache server via the XAMPP Control Panel
 
 Open the browser and go to:
 
-http://localhost/webspace/Arin_Decent_Into_Darkness/
+http://localhost/webspace/Arin_Decent_Into_Darkness/index.html
 
 📜 License
 
